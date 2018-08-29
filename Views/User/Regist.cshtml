@@ -1,0 +1,184 @@
+﻿@{
+    Layout = null;
+}
+@model MVCTest.Models.User
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <title>用户注册</title>
+    @Styles.Render("~/Content/css")
+    <style>
+        body {
+            padding: 20px !important;
+            overflow-x: hidden;
+        }
+
+        .head-img {
+            height: 80px;
+            display: inline-block;
+            width: 80px;
+            border: 2px solid #e4e4e4;
+            border-radius: 50%;
+            background-size: cover;
+        }
+
+        .login-form .form-group {
+            border: none;
+        }
+
+        .login-form label {
+            color: #000;
+            font-weight: bold;
+        }
+
+        .login-form .head-title {
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .login-form span.required {
+            color: #f34b4b;
+        }
+
+        a.login-link {
+            color: #fff !important;
+        }
+
+            a.login-link:hover {
+                color: #34aadc !important;
+            }
+    </style>
+</head>
+<body class="login-img3-body">
+    <form class="login-form" action="/User/Regist" method="post" style="max-width: 680px; margin: 0 auto;">
+        @Html.AntiForgeryToken()
+        <div class="login-wrap">
+            @Html.ValidationSummary(true)
+            <h3 class="head-title">注册</h3>
+            <div class="form-validate form-horizontal" id="feedback_form">
+                <div class="form-group ">
+                    <label for="Name" class="control-label col-lg-2">名字 <span class="required">*</span></label>
+                    <div class="col-lg-10">
+                        <input class="form-control" id="Name" name="Name" type="text" value="@(Model!=null?Model.Name:"")" />
+                        @Html.ValidationMessageFor(model => model.Name)
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <label for="Password" class="control-label col-lg-2">密码 <span class="required">*</span></label>
+                    <div class="col-lg-10">
+                        <input class="form-control " id="Password" type="password" name="Password" value="@(Model != null ? Model.Password : "")" />
+                        @Html.ValidationMessageFor(model => model.Password)
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <label for="Gender" class="control-label col-lg-2">性别 </label>
+                    <div class="col-lg-10">
+                        @if (Model != null)
+                        {
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="Gender" @(Model.Gender ? "checked" : "") value="true">
+                                    男
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="Gender" @(Model.Gender ? "" : "checked") value="false">
+                                    女
+                                </label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="Gender" checked value="true">
+                                    男
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="Gender" value="false">
+                                    女
+                                </label>
+                            </div>
+                        }
+
+                        @Html.ValidationMessageFor(model => model.Gender)
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <label for="Email" class="control-label col-lg-2">邮箱 </label>
+                    <div class="col-lg-10">
+                        <input class="form-control " id="Email" type="text" name="Email" value="@(Model != null ? Model.Email : "")" />
+                        @Html.ValidationMessageFor(model => model.Email)
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <label for="imgContainer" class="control-label col-lg-2">头像 </label>
+                    <div class="col-lg-10">
+                        <div id="imgContainer" class="head-img" style="background-image:url(@(Model != null ? Model.ImgUrl : ""))"></div>
+                        <input name="ImgUrl" id="ImgUrl" style="display:none" value="@(Model != null ? Model.ImgUrl : "")" />
+                        @Html.ValidationMessageFor(model => model.ImgUrl)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-lg-offset-2 col-lg-10">
+                        <button class="btn btn-primary btn-lg" type="submit">提交</button>
+                        <a href="/User/Login" class="btn btn-info btn-lg login-link">有账号？去登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    <input id="imgFile" type="file" style="display:none" />
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/myScript")
+    <script src="~/Scripts/MyTools.js"></script>
+    <script>
+        $(function () {
+
+            $("#imgContainer").click(function () {
+                $("#imgFile").click();
+            });
+
+            $("#imgFile").change(function () {
+                var img = document.getElementById("imgFile").files[0];
+                var formData = new FormData();
+                formData.append("file", img);
+
+                MyTools.ajax("post", "/User/imgUpload", formData, function (resp) {
+                    resp = JSON.parse(resp);
+                    if (resp.res) {
+                        $("#imgContainer").css("background-image", "url('" + resp.path + "')");
+                        $("#ImgUrl").val(resp.path);
+                        MyTools.alertFrame({
+                            type: 'alert-success',
+                            text: resp.mes,
+                            icon: "glyphicon-ok-circle"
+                        });
+                    } else {
+                        MyTools.alertFrame({
+                            type: 'alert-danger',
+                            text: resp.mes,
+                            icon: "glyphicon-remove-circle"
+                        });
+                    }
+
+                });
+            });
+
+        });
+
+    </script>
+</body>
+
+</html>

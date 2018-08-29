@@ -1,0 +1,129 @@
+﻿@model MVCTest.Models.Module
+
+<style>
+    .head-img {
+        height: 40px;
+        display: inline-block;
+        width: 50px;
+        border: 2px solid #e4e4e4;
+        text-align: center;
+        font-size: 30px;
+        color: #007aff;
+    }
+    .icon-list li {
+        display: inline-block;
+        border: 1px solid #e4e4e4;
+        padding:5px 10px;
+        cursor:pointer;
+    }
+        .icon-list li:hover, .icon-list li.active {
+            background-color: #007aff;
+            color: #fff;
+        }
+
+    .icon-list li span {
+      font-size:30px;
+   }
+</style>
+
+<div style="margin-bottom:20px;">
+    <a class="btn btn-primary  btn-sm" href="/Module/Index">返回首页</a>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        @Html.ValidationSummary(true)
+        <div class="col-lg-12">
+            <section class="panel">
+                <header class="panel-heading">
+                    新增模块
+                </header>
+                <div class="panel-body">
+                    <div class="form">
+                        <div class="form-validate form-horizontal" id="feedback_form">
+                            <div class="form-group ">
+                                <label for="ModuleName" class="control-label col-lg-2">模块名称 <span class="required">*</span></label>
+                                <div class="col-lg-10">
+                                    <input class="form-control" id="ModuleName" name="ModuleName" type="text" value="@(Model!=null?Model.ModuleName:"")" />
+                                    @Html.ValidationMessageFor(model => model.ModuleName)
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label for="ModuleArddress" class="control-label col-lg-2">模块地址 <span class="required">*</span></label>
+                                <div class="col-lg-10">
+                                    <input class="form-control" id="ModuleArddress" name="ModuleArddress" type="text" value="@(Model!=null?Model.ModuleArddress:"")" />
+                                    @Html.ValidationMessageFor(model => model.ModuleArddress)
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label for="ModuleIcon" class="control-label col-lg-2">模块图标 <span class="required">*</span></label>
+                                <div class="col-lg-10">
+                                    <div id="iconContainer" class="head-img"></div><br/>
+                                    <input name="ModuleIcon" id="ModuleIcon" style="display:none" value="@(Model != null ? Model.ModuleIcon : "")" />
+                                    @Html.ValidationMessageFor(model => model.ModuleIcon)
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label for="Sort" class="control-label col-lg-2">排序 <span class="required">*</span></label>
+                                <div class="col-lg-10">
+                                    <input class="form-control " id="Sort" type="number" name="Sort" value="@(Model != null ? Model.Sort.ToString() : "")" />
+                                    @Html.ValidationMessageFor(model => model.Sort)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-lg-offset-2 col-lg-10">
+                                    <button class="btn btn-primary" type="submit">创建</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+}
+@section Scripts {
+<script src="~/Scripts/iconJson.js"></script>
+    <script>
+        $(function () {
+
+            $("#iconContainer").click(function () {
+                var list = '<ul class="icon-list" id="iconList">';
+                for (var i = 0; i < iconJson.length; i++) {
+                    list+='<li><span class="'+iconJson[i]+'"></span></li>';
+                }
+                list += "</ul>";
+                MyTools.modalFrame({
+                    title: "图标选择",
+                    body: list,
+                    cancleBtn: "取消",
+                    handleState: false
+                }, function () {
+                    $("#iconList").find("li.active>span");
+                    var $selectIcon = $("#iconList").find("li.active>span");
+                    if ($selectIcon.length > 0) {
+                        $("#iconContainer").prop("class", "").addClass($selectIcon.prop("class") + " head-img select-icon");
+                        $("#ModuleIcon").val($selectIcon.prop("class"));
+                        $("#modalFrame").modal('hide');
+                    } else {
+                        MyTools.alertFrame({
+                            type: 'alert-danger',
+                            text: "请选择图标",
+                            icon: "glyphicon-remove-circle"
+                        });
+                    }
+                });
+            });
+
+            $(document).on("click", "#iconList>li", function () {
+                $("#iconList>li").removeClass("active");
+                $(this).addClass("active");
+            });
+
+        });
+
+    </script>
+
+}

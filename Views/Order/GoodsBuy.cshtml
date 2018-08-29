@@ -1,0 +1,157 @@
+﻿@{
+    Layout = null;
+}
+@model IEnumerable<MVCTest.Models.Goods>
+
+<style>
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle !important;
+    }
+</style>
+
+<div class="navbar-form" style="margin-bottom:10px;margin-left:0">
+    <input class="form-control" name="name" id="searchVal" placeholder="请输入查询商品名称" type="search" style="display:inline-block">
+    <a class="btn btn-success" href="javascript:;" id="seachGoods">确定</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <tr>
+            <th>
+                <input type="checkbox" id="selectControl" />
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreateDate)
+            </th>
+            <th>
+                购买数量
+            </th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox" class="slectItem" value="@item.Id" />
+                </td>
+                <td class="Name">
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td class="Price">
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td class="Number">
+                    @Html.DisplayFor(modelItem => item.Number)
+                </td>
+                <td class="CreateDate">
+                    @Html.DisplayFor(modelItem => item.CreateDate)
+                </td>
+                <td>
+                    <input class="number-input" type="number" min="1" max="@item.Number" step="1" />
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>
+
+    <script>
+        ///<reference path="~/Scripts/MyTools.js" />
+        $(function () {
+
+            //全选和反选的处理
+            $("#selectControl").on("click", function () {
+                if ($(this).is(":checked")) {
+                    $(".slectItem").prop("checked", true);
+                } else {
+                    $(".slectItem").prop("checked", false);
+                }
+            });
+
+            //全选和反选的处理
+            $(".slectItem").on("click", function () {
+                if (!$(this).is(":checked")) {
+                    $("#selectControl").prop("checked", false);
+                } else {
+                    if ($(".slectItem").length === $(".slectItem:checked").length) {
+                        $("#selectControl").prop("checked", true);
+                    }
+                }
+            });
+
+            //改变数量
+            $(".number-input").on("change", function () {
+                var numberInput = $(this),
+                    number = parseInt(numberInput.val());
+                if (number < 0) {
+                    numberInput.val(0);
+                } else if (number > parseInt(numberInput.prop("max"))) {
+                    numberInput.val(numberInput.prop("max"));
+                }
+            });
+
+            $("#seachGoods").on("click", function () {
+                $.get("/Order/GoodsListView", { sname: $("#searchVal").val() }, function (datas) {
+                    MyTools.modalFrame({
+                        title: "商品选择",
+                        body: datas,
+                        cancleBtn: "取消"
+                    }, function () {
+
+                    });
+                });
+            });
+
+            $("#buyNow").click(function () {
+                var $selectItems = $(".slectItem:checked");
+                if ($selectItems.length > 0) {
+                    var goodInfor = [];
+                    for (var i = 0; i < $selectItems.length; i++) {
+                        var id = $($selectItems[i]).val();
+                        var num = $($selectItems[i]).parents("tr").find(".number-input").val();
+                        var obj = {
+                            Id: id,
+                            Num: num
+                        };
+                        goodInfor.push(obj);
+                    }
+
+                    MyTools.modalFrame({
+                        body: "确定购买选中商品？",
+                        cancleBtn: "关闭"
+                    }, function () {
+                        $.post("/GoodsBuy/SubmitOrder", { goodinfor: JSON.stringify(goodInfor), uid: $(".user-img").data("id") }, function (resp) {
+                            if (resp.res) {
+                                window.location.href = $("#toIndex").prop("href");
+                            } else {
+                                MyTools.alertFrame({
+                                    type:"alert-danger",
+                                    text: resp.msg,
+                                    icon: "glyphicon-remove-circle"
+                                });
+                            }
+                        });
+                    });
+                } else {
+                    MyTools.modalFrame({
+                        title: '警告',
+                        body: "请选择你购买的商品",
+                        cancleBtn: "关闭",
+                        handleState:false
+                    });
+                }
+            });
+        });
+
+    </script>
+
+

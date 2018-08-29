@@ -1,0 +1,225 @@
+﻿@using MVCTest.Models;
+@{
+    User currentUser = null;
+    ICollection<Module> modules =new List<Module>();
+    if (Session["UserInfor"] != null) {
+        currentUser = Session["UserInfor"] as User;
+        MyDbContext db = new MyDbContext();
+        modules = db.Users.Find(currentUser.Id).UserRole.Modules ;
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <title>我的网页</title>
+    @Styles.Render("~/Content/css")
+    <style>
+        ul.sidebar-menu li.active a, ul.sidebar-menu li a:hover, ul.sidebar-menu li a:focus {
+            background: #007aff;
+        }
+        #alertFrame {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: 180px;
+            display: table-cell;
+            font-size: 16px;
+            z-index:99999;
+        }
+        .dropdown-menu.extended.logout > li:last-child {
+          background:inherit;
+        }
+
+         .dropdown-menu.extended.logout > li:last-child > a {
+             background: inherit !important;
+             color: #797979;
+         }
+
+        .dropdown-menu.extended.logout > li > a:hover {
+            color: #fff !important;
+            border-bottom: none !important;
+            text-transform: uppercase;
+            background-color: #688a7e !important;
+        }
+        .dropdown-menu.extended.logout > li > a:hover > i {
+            color: #fff !important;
+        }
+        .user-img {
+            height: 38px;
+            display: inline-block;
+            width: 38px;
+            border-radius: 50%;
+            background-size: cover;
+            vertical-align:middle;
+        }
+        .modal-sm {
+          width:40%;
+        }
+        .modal-lg {
+            width: 70%;
+        }
+        .sidebar-menu a i, .sidebar-menu a span {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <section id="container" class="">
+
+        <!--顶部开始-->
+        <header class="header dark-bg">
+            <div class="toggle-nav">
+                <div class="icon-reorder tooltips" data-original-title="Toggle Navigation" data-placement="bottom"></div>
+            </div>
+
+            <!--登录开始-->
+            <a href="#" class="logo">后台管理 <span class="lite">系统</span></a>
+            <!--登录结束-->
+            <!--  搜索开始 -->
+            @*<div class="nav search-row" id="top_menu">
+                <ul class="nav top-menu">
+                    <li>
+                        <form class="navbar-form">
+                            <input class="form-control" placeholder="Search" type="text">
+                        </form>
+                    </li>
+                </ul>
+            </div>*@
+            <!-- 搜索结束 -->
+            <!-- 通知信息开始-->
+            <div class="top-nav notification-row">
+                <ul class="nav pull-right top-menu">
+                    <!-- 用户登录开始-->
+                    <li class="dropdown">
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="profile-ava">
+                                <span class="user-img" data-id="@(currentUser == null ? "" : currentUser.Id.ToString())" style="background-image: url('@((currentUser == null||currentUser.ImgUrl=="") ? "/img/default-user.png" : currentUser.ImgUrl)')"></span>
+                                @*<img src="" style="width:35px;height:35px;border:none">*@
+                            </span>
+                            <span class="username">@(currentUser == null ? "未知用户" : currentUser.Name)</span>
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu extended logout">
+                            <div class="log-arrow-up"></div>
+                            <li class="eborder-top">
+                                <a href='/User/Infor?id=@(currentUser == null ? "" : currentUser.Id.ToString())'><i class="glyphicon glyphicon-user"></i> 个人信息</a>
+                            </li>
+                            @*<li>
+                                <a href="#"><i class="icon_mail_alt"></i> My Inbox</a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="icon_clock_alt"></i> Timeline</a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="icon_chat_alt"></i> Chats</a>
+                            </li>*@
+                            <li>
+                                <a href="/User/Logout?returnUrl=" id="logout"><i class="glyphicon glyphicon-log-out"></i> 注销</a>
+                            </li>
+                            @*<li>
+                                <a href="documentation.html"><i class="icon_key_alt"></i> Documentation</a>
+                            </li>
+                            <li>
+                                <a href="documentation.html"><i class="icon_key_alt"></i> Documentation</a>
+                            </li>*@
+                        </ul>
+                    </li>
+                    <!-- 用户登录结束-->
+                </ul>
+                <!-- 通知信息结束-->
+            </div>
+        </header>
+        <!--顶部结束-->
+        <!--左侧导航开始-->
+        <aside>
+            <div id="sidebar" class="nav-collapse ">
+                <!-- sidebar menu start-->
+                <ul class="sidebar-menu">
+                    @foreach (Module item in modules)
+                    {
+                      <li><a href="@item.ModuleArddress" data-href="@item.ModuleArddress"><i class="@item.ModuleIcon"></i><span>@item.ModuleName</span></a></li>
+                    }
+                </ul>
+                <!-- sidebar menu end-->
+            </div>
+        </aside>
+        <!--左侧导航结束-->
+        <!--主要内容开始-->
+        <section id="main-content" style="padding:70px 20px 10px">
+
+            @RenderBody()
+        </section>
+        <!--主要内容结束-->
+    </section>
+
+    <!--警告框-->
+    <div class="alert" role="alert" id="alertFrame" style="display:none">
+        <i class="glyphicon glyphicon-ok-circle" style="vertical-align:middle;"></i>
+        <span style="vertical-align: middle;"></span>
+    </div>
+
+    <!--模态框-->
+    <div class="modal fade" id="modalFrame" tabindex="-1" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="modalTitle"></h4>
+                </div>
+                <div class="modal-body" id="modalBody">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="confirmBtn"></button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="cacleBtn"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/myScript")
+    <script src="~/Scripts/MyTools.js"></script>
+    <script>
+        window.onload = function () {
+            var href = document.getElementById("logout").getAttribute("href");
+            document.getElementById("logout").setAttribute("href", href + window.location.pathname);
+        }
+        $(function () {
+            var pathname = window.location.pathname,
+            pathArray = splitPathname(pathname);
+            if (pathArray.length > 0) {
+                $("#sidebar").find("a").each(function (index, item) {
+                    var name = splitPathname($(item).data("href"))[0];
+                    if (pathArray[0] === name) {
+                        $(item).parent("li").addClass("active");
+                        return;
+                    }
+                });
+            } else {
+
+                $("#sidebar .sidebar-menu").find("li").first().addClass("active");
+            }
+
+            function splitPathname(path) {
+                var pathArray = path.split("/")
+                for (var i = 0; i < pathArray.length; i++) {
+                    if (pathArray[i] === "") {
+                        pathArray.splice(i, 1);
+                        i--;
+                    }
+                }
+                return pathArray;
+            }
+        });
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,77 @@
+﻿@{
+    Layout = null;
+}
+@model MVCTest.Models.Login
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <title>登录页面</title>
+    @Styles.Render("~/Content/css")
+    <style>
+        a.regest-link {
+            color: #fff !important;
+        }
+
+        a.regest-link:hover {
+            color: #34aadc !important;
+        }
+
+        .login-form .head-title {
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+        }
+        .login-form .input-group-addon {
+          font-size:20px;
+          color:#000;
+          background-color:transparent;
+        }
+    </style>
+</head>
+
+<body class="login-img3-body">
+    
+    <div class="container">
+        
+        <form class="login-form" action="/User/Login" method="post" style="margin-top:180px;">
+            @Html.AntiForgeryToken()
+            <div class="login-wrap">
+                @Html.ValidationSummary(true)
+                @*<p class="login-img"><i class="icon_lock_alt"></i></p>*@
+                <h3 class="head-title">登录</h3>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="icon_profile"></i></span>
+                    <input type="text" class="form-control" name="Name" id="Name" placeholder="用户名/邮箱" autofocus value="@(Model == null ? "" : Model.Name)">
+                    @Html.ValidationMessageFor(model => model.Name)
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="icon_key_alt"></i></span>
+                    <input type="password" class="form-control" name="Password" id="Password" placeholder="密码" value="@(Model == null ? "" : Model.Password)">
+                    @Html.ValidationMessageFor(model => model.Password)
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                    <input class="form-control" name="VerifyCode" style="width:160px;" id="VerifyCode">
+                    <img style="float:right;" src="/User/GetVerifyCodeImg" onclick="this.src=this.src+'?'" />
+                    <div>
+                      @Html.ValidationMessage("VerifyCodeIsValid")
+                    </div>
+                </div>
+                <label class="checkbox">
+                    <input type="checkbox" id="RememberMe" name="RememberMe" value="true" @(Model == null ? "" : Model.RememberMe?"checked":"")> 记住一天
+                    @*<span class="pull-right"> <a href="javascript:;" id="forgetPwd"> 忘记密码?</a></span>*@
+                    @Html.ValidationMessageFor(model => model.RememberMe)
+                </label>
+                <input value="@ViewData["returnUrl"]" name="returnUrl" style="display:none" />
+                
+                <button class="btn btn-primary btn-lg btn-block" type="submit">登录</button>
+                <a href="/User/Regist" class="btn btn-info btn-lg btn-block regest-link">没有帐号？去注册</a>
+            </div>
+        </form>
+
+    </div>
+</body>
+</html>

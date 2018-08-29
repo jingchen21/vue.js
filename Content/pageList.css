@@ -1,0 +1,19 @@
+﻿.selectPageSize,.changePageNum {
+  display:inline-block;
+  vertical-align:middle;
+}
+
+.pagination {
+  vertical-align:middle;
+  margin:0 20px !important;
+}
+
+.selectPageSize > select {
+     height:30px;
+ }
+
+.changePageNum>input {
+    vertical-align:middle;
+    width:45px;
+    height:30px;
+}

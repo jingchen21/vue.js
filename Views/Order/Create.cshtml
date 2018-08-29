@@ -1,0 +1,141 @@
+﻿@model MVCTest.Models.Order
+<div style="margin-bottom:20px;">
+    <a class="btn btn-primary" href="/Order/Index" id="toIndex"><span class="glyphicon glyphicon-home"></span>  返回</a>
+</div>
+<style>
+    #goodsSection > div {
+     padding-bottom:10px;
+     color:#000;
+    }
+    #Address {
+      height:120px;
+    }
+</style>
+<div>
+    <div class="row">
+        <div class="col-lg-12">
+            <section class="panel">
+                <header class="panel-heading">
+                    添加订单
+                </header>
+                <div class="panel-body">
+                    <div class="form">
+                        <div class="form-validate form-horizontal">
+                            <div class="form-group">
+                                <label for="cname" class="control-label col-lg-2">商品 <span class="required">*</span></label>
+                                <div class="col-lg-10">
+                                    <section id="goodsSection"></section>
+                                    <a class="btn btn-primary" href="javascript:;" id="selectGoodsBtn">选择商品</a>
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label for="cemail" class="control-label col-lg-2">收获地址 <span class="required">*</span></label>
+                                <div class="col-lg-10">
+                                    <textarea class="form-control" id="Address" name="Address">@(Model != null ? Model.Address : "")</textarea>
+                                    @Html.ValidationMessageFor(model => model.Address)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-lg-offset-2 col-lg-10">
+                                    <button class="btn btn-primary" id="submitOrder">创建</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+  <script>
+      $(function () {
+          var goodInfor=[];
+          $("#selectGoodsBtn").on("click", function () {
+              $.get("/Order/GoodsListView", function (datas) {
+                  MyTools.modalFrame({
+                      title:"商品选择",
+                      body: datas,
+                      cancleBtn: "取消",
+                      handleState:false
+                  }, function () {
+                      var $selectItems = $(".slectItem:checked");
+                      if ($selectItems.length > 0) {
+                          goodInfor = [];
+                          for (var i = 0; i < $selectItems.length; i++) {
+                              var parent=$($selectItems[i]).parents("tr"),
+                                  id = $($selectItems[i]).val(),
+                                  num = parent.find(".number-input").val(),
+                                  price=$.trim(parent.find(".Price").text()),
+                                  name= $.trim(parent.find(".Name").text())   ;
+                              var obj = {
+                                  Id: id,
+                                  Num: num,
+                                  Price: parseFloat(parseFloat(price) * parseFloat(num)),
+                                  Name:name
+                              };
+                              goodInfor.push(obj);
+                          }
+                          appendGoods(goodInfor);
+                          $("#modalFrame").modal('hide');
+                      } else {
+                          MyTools.alertFrame({
+                              type: 'alert-danger',
+                              text: "请选择购买的商品",
+                              icon: "glyphicon-remove-circle"
+                          });
+                      }
+                  });
+              })
+          });
+
+          $("#submitOrder").on("click", function () {
+              if($.trim($("#Address").val())===""){
+                  MyTools.alertFrame({
+                      type:"alert-danger",
+                      text: "地址不能为空",
+                      icon: "glyphicon-remove-circle"
+                  });
+                  return;
+              } else if (goodInfor.length === 0) {
+                  MyTools.alertFrame({
+                      type:"alert-danger",
+                      text: "请选择购买商品",
+                      icon: "glyphicon-remove-circle"
+                  });
+                  return;
+              }
+              var datas = [];
+              for (var i = 0; i < goodInfor.length; i++) {
+                  var obj = {};
+                  obj.Id = goodInfor[i].Id;
+                  obj.Num = goodInfor[i].Num;
+                  datas.push(obj);
+              }
+              $.post("/GoodsBuy/SubmitOrder", { goodinfor: JSON.stringify(datas), uid: $(".user-img").data("id"), address: $("#Address").val() }, function (resp) {
+                  if (resp.res) {
+                      window.location.href = $("#toIndex").prop("href");
+                  } else {
+                      MyTools.alertFrame({
+                          type:"alert-danger",
+                          text: resp.msg,
+                          icon: "glyphicon-remove-circle"
+                      });
+                  }
+              });
+          });
+
+          function appendGoods(gi) {
+              var str = "<div>";
+              //console.log(goodInfor);
+              for (var i = 0; i < gi.length; i++) {
+                  var item = gi[i];
+                  str += item.Name + "X" + item.Num + "&nbsp;&nbsp;价格：" + item.Price + "<br/>";
+              }
+              str+"</div>"
+              $("#goodsSection").html(str);
+          }
+      });
+  </script>    
+}

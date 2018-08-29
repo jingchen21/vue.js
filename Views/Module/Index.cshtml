@@ -1,0 +1,149 @@
+﻿@model IEnumerable<MVCTest.Models.Module>
+
+@{
+    ViewBag.Title = "模块列表";
+}
+
+<style>
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle !important;
+    }
+    .icon-show {
+        color: #007aff;
+        font-size: 30px;
+    }
+</style>
+
+<form method="get" action="/Module/Index" class="navbar-form" style="margin-bottom:10px;margin-left:0">
+    <a class="btn btn-primary" href="/Module/Create"><span class="glyphicon glyphicon-plus"></span>  新增</a>
+    <a class="btn btn-danger" href="javascript:;" id="mulDelete"><span class="glyphicon glyphicon-trash"></span>  批量删除</a>
+    <input class="form-control" name="name" placeholder="请输入查询姓名" type="search" style="display:inline-block">
+</form>
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <tr>
+            <th>
+                <input type="checkbox" id="selectControl" />
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ModuleName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ModuleArddress)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ModuleIcon)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sort)
+            </th>
+            <th>操作</th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox" class="slectItem" value="@item.Id" />
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ModuleName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ModuleArddress)
+                </td>
+                <td>
+                    <span class="icon-show @item.ModuleIcon"></span>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Sort)
+                </td>
+                <td>
+                    <a href="/Module/Edit?id=@item.Id" class="btn btn-primary  btn-sm"><span class="glyphicon glyphicon-edit"></span>  编辑</a>
+                    <button class="btn btn-danger  btn-sm removeBtn" data-id="@item.Id"><span class="glyphicon glyphicon-trash"></span>  删除</button>
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>
+<nav id="pagelist"></nav>
+
+@section scripts{
+    <script src="~/Scripts/MyJQPlugin.js"></script>
+    <script>
+        ///<reference path="~/Scripts/MyTools.js" />
+        $(function () {
+            //单项删除的处理
+            $(".removeBtn").on("click", function () {
+                var id = $(this).data("id");
+                MyTools.modalFrame({
+                    body: "确定批量删除选中项？",
+                    cancleBtn: "关闭"
+                }, function () {
+                    $.post("/Module/DeleteItem", { ids: id }, function (resp) {
+                        if (resp.code == 0) {
+                            window.location.reload();
+                        } else {
+                            MyTools.alertFrame({
+                                text: resp.msg
+                            });
+                        }
+                    });
+                });
+            });
+
+            //全选和反选的处理
+            $("#selectControl").on("click", function () {
+                if ($(this).is(":checked")) {
+                    $(".slectItem").prop("checked", true);
+                } else {
+                    $(".slectItem").prop("checked", false);
+                }
+            });
+
+            //全选和反选的处理
+            $(".slectItem").on("click", function () {
+                if (!$(this).is(":checked")) {
+                    $("#selectControl").prop("checked", false);
+                } else {
+                    if ($(".slectItem").length === $(".slectItem:checked").length) {
+                        $("#selectControl").prop("checked", true);
+                    }
+                }
+            });
+
+            //批量删除的处理
+            $("#mulDelete").on("click", function () {
+                var $selectItems = $(".slectItem:checked");
+                if ($selectItems.length > 0) {
+                    var ids = "";
+                    $selectItems.each(function () {
+                        ids += $(this).val() + ",";
+                    });
+                    MyTools.modalFrame({
+                        body: "确定批量删除选中项？",
+                        cancleBtn: "关闭"
+                    }, function () {
+                        $.post("/Module/DeleteItem", { ids: ids }, function (resp) {
+                            if (resp.code == 0) {
+                                window.location.reload();
+                            } else {
+                                MyTools.alertFrame({
+                                    text: resp.msg
+                                });
+                            }
+                        });
+                    });
+                } else {
+                    MyTools.modalFrame({
+                        title: '警告',
+                        body: "批量删除项不能为空",
+                        cancleBtn: "关闭"
+                    });
+                }
+            });
+        });
+    </script>
+}
